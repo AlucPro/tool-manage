@@ -7,7 +7,7 @@ Register, inspect, list, and remove locally available CLI commands with `tm`.
 ## Install
 
 ```bash
-pnpm add -g tool-manage
+pnpm add -g @alucpro/tool-manage
 ```
 
 This package only supports `pnpm`.
@@ -82,6 +82,6 @@ Before publishing, make sure you are logged in to npm and the package name is st
 
 ```bash
 npm whoami
-npm view tool-manage version --registry=https://registry.npmjs.org/
+npm view @alucpro/tool-manage version --registry=https://registry.npmjs.org/
 pnpm publish --access public
 ```

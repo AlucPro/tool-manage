@@ -1,5 +1,5 @@
 {
-  "name": "tool-manage",
+  "name": "@alucpro/tool-manage",
   "version": "0.1.0",
   "description": "Register, inspect, list, and remove locally available pnpm CLI commands with the tm command.",
   "type": "module",
