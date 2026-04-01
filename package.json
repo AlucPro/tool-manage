@@ -1,0 +1,42 @@
+{
+  "name": "tool-manage",
+  "version": "0.1.0",
+  "description": "Register, inspect, list, and remove locally available pnpm CLI commands with the tm command.",
+  "type": "module",
+  "private": false,
+  "bin": {
+    "tm": "./src/cli.js"
+  },
+  "files": [
+    "src"
+  ],
+  "license": "MIT",
+  "author": "Xuming <jinxm.alucard@gmail.com>",
+  "homepage": "https://github.com/AlucPro/tool-manage#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AlucPro/tool-manage.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AlucPro/tool-manage/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "packageManager": "pnpm@10.12.1",
+  "scripts": {
+    "preinstall": "node ./src/ensure-pnpm.js",
+    "start": "node ./src/cli.js",
+    "dev": "node ./src/cli.js --help",
+    "check": "node ./src/cli.js --help",
+    "list": "node ./src/cli.js --list"
+  },
+  "keywords": [
+    "cli",
+    "npm",
+    "tool",
+    "tm",
+    "pnpm",
+    "command-registry"
+  ]
+}
