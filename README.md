@@ -2,15 +2,19 @@
 
 Register, inspect, list, and remove locally available CLI commands with `tm`.
 
-`tool-manage` is designed for developers who have multiple local npm CLI tools installed and want a simple registry to keep track of them. It works especially well in a `pnpm`-based environment and can show command metadata such as description, version, repository, author, and `--help` output.
+`tool-manage` is designed for developers who have multiple local npm CLI tools installed and want a simple registry to keep track of them. It can show command metadata such as description, version, repository, author, and `--help` output.
 
 ## Install
 
 ```bash
-pnpm add -g @alucpro/tool-manage
+npm install -g @alucpro/tool-manage
 ```
 
-This package only supports `pnpm`.
+or
+
+```bash
+pnpm add -g @alucpro/tool-manage
+```
 
 ## Usage
 
@@ -38,7 +42,6 @@ tm --list
 - `tm --list` or bare `tm` lists all registered commands
 - `tm --remove <command>` removes a registered command
 - command listing includes `--help` output, description, version, repository, and author when available
-- only `pnpm` is supported for installation
 
 ## Examples
 
@@ -68,6 +71,13 @@ tm --remove pom
 - `tm` also executes `<command> --help` to display a help preview in the list view
 
 ## Local Development
+
+```bash
+npm install
+npm run start -- --help
+```
+
+or
 
 ```bash
 pnpm install
