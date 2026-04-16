@@ -1,8 +1,8 @@
 # tool-manage
 
-Register, inspect, list, and remove locally available CLI commands with `tm`.
+Register, inspect, enrich, and manage locally available CLI commands with `tm`.
 
-`tool-manage` is designed for developers who have multiple local npm CLI tools installed and want a simple registry to keep track of them. It can show command metadata such as description, version, repository, author, and `--help` output.
+`tool-manage` is designed for developers who have multiple local CLI tools installed and want a richer local registry to keep track of them. It stores command metadata in sqlite, can recover old `registry.json` data, and supports manual metadata completion when a command does not expose a usable `package.json`.
 
 ## Install
 
@@ -22,6 +22,9 @@ pnpm add -g @alucpro/tool-manage
 tm --help
 tm
 tm --register pom
+tm --show pom
+tm --edit pom
+tm --refresh pom
 tm --remove pom
 ```
 
@@ -31,6 +34,9 @@ tm --remove pom
 tm --help
 tm --version
 tm --register <command>
+tm --show <command>
+tm --edit <command>
+tm --refresh <command>
 tm --remove <command>
 tm --list
 ```
@@ -38,10 +44,41 @@ tm --list
 ## Features
 
 - `tm --help` shows usage plus package metadata
-- `tm --register <command>` registers a command into the local registry
-- `tm --list` or bare `tm` lists all registered commands
+- `tm --register <command>` registers a command into the sqlite registry
+- `tm --show <command>` prints a full command record, including `--help` preview
+- `tm --edit <command>` opens a metadata template so you can fill missing fields
+- `tm --refresh <command>` re-detects runtime metadata and keeps manual overrides
+- `tm --list` or bare `tm` lists all registered commands in a table view
 - `tm --remove <command>` removes a registered command
-- command listing includes `--help` output, description, version, repository, and author when available
+
+## Storage
+
+- sqlite database: `~/.tool-manage/tool-manage.db`
+- metadata templates: `~/.tool-manage/templates/`
+- legacy backup after migration: `~/.tool-manage/registry.json.bak`
+
+Inspect the sqlite database directly:
+
+```bash
+sqlite3 ~/.tool-manage/tool-manage.db
+```
+
+Useful sqlite commands:
+
+```sql
+.tables
+.schema commands
+.headers on
+.mode column
+SELECT id, command_name, description, version, repository, author, metadata_source, updated_at FROM commands;
+SELECT command_id, field_name, field_value, updated_at FROM command_overrides;
+```
+
+One-shot query from the shell:
+
+```bash
+sqlite3 ~/.tool-manage/tool-manage.db "SELECT id, command_name, description, version, repository, author, metadata_source FROM commands;"
+```
 
 ## Examples
 
@@ -49,6 +86,24 @@ Register a locally available command:
 
 ```bash
 tm -r pom
+```
+
+Show one registered command:
+
+```bash
+tm --show pom
+```
+
+Edit metadata for a command:
+
+```bash
+tm --edit pom
+```
+
+Refresh detected metadata:
+
+```bash
+tm --refresh pom
 ```
 
 List all registered commands:
@@ -65,10 +120,19 @@ tm --remove pom
 
 ## How It Works
 
-- registered command names are stored in `~/.tool-manage/registry.json`
-- `tm` resolves each command from your local `PATH`
-- when available, `tm` reads the command package metadata from its `package.json`
-- `tm` also executes `<command> --help` to display a help preview in the list view
+- command data is stored in `~/.tool-manage/tool-manage.db`
+- editable metadata templates are stored in `~/.tool-manage/templates/`
+- legacy `~/.tool-manage/registry.json` data is auto-imported on first run
+- `tm` resolves commands from your local `PATH`
+- when available, `tm` reads command package metadata from `package.json`
+- `tm` stores a `--help` preview in sqlite so later list and show commands stay fast
+- if metadata is missing, `tm` can generate a JSON template for you to complete manually
+
+## Registration-Friendly package.json
+
+If you want another repo to be easy for `tm` to register and inspect, use the spec in [docs/package-json-registration-spec.md](/Users/alucard/Code/AlucPro/tool-manage/docs/package-json-registration-spec.md).
+
+That file is written so you can copy it into another repository and let AI generate or repair a `package.json` that exposes the fields `tm` relies on: `name`, `version`, `description`, `author`, `repository`, `bin`, `engines`, and related metadata.
 
 ## Local Development
 
@@ -83,6 +147,7 @@ or
 pnpm install
 pnpm start -- --help
 pnpm start -- --register pom
+pnpm start -- --show pom
 pnpm start -- --list
 ```
 

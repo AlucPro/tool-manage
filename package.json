@@ -1,7 +1,7 @@
 {
   "name": "@alucpro/tool-manage",
   "version": "0.1.1",
-  "description": "Register, inspect, list, and remove locally available pnpm CLI commands with the tm command.",
+  "description": "Register, inspect, enrich, and manage local CLI commands with sqlite-backed metadata.",
   "type": "module",
   "private": false,
   "bin": {
@@ -28,13 +28,20 @@
     "start": "node ./src/cli.js",
     "dev": "node ./src/cli.js --help",
     "check": "node ./src/cli.js --help",
-    "list": "node ./src/cli.js --list"
+    "list": "node ./src/cli.js --list",
+    "show": "node ./src/cli.js --show pnpm"
   },
   "keywords": [
     "cli",
     "npm",
     "tool",
     "tm",
-    "command-registry"
-  ]
+    "command-registry",
+    "sqlite"
+  ],
+  "dependencies": {
+    "@clack/prompts": "^1.2.0",
+    "cli-table3": "^0.6.5",
+    "sql.js": "^1.14.1"
+  }
 }
