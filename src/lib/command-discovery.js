@@ -68,6 +68,29 @@ function readPackageFromFile(packageFilePath) {
   }
 }
 
+function resolveWrapperTarget(commandPath) {
+  if (!commandPath || !fs.existsSync(commandPath)) {
+    return null;
+  }
+
+  try {
+    const raw = fs.readFileSync(commandPath, "utf8");
+    const execMatch = raw.match(/exec\s+"([^"]+)"/);
+    if (!execMatch?.[1]) {
+      return null;
+    }
+
+    const targetPath = execMatch[1];
+    if (!path.isAbsolute(targetPath)) {
+      return null;
+    }
+
+    return fs.existsSync(targetPath) ? targetPath : null;
+  } catch {
+    return null;
+  }
+}
+
 function findPackageFromGlobalPnpm(commandName) {
   const result = run("pnpm", ["ls", "-g", "--json", "--depth", "-1"]);
   if (result.status !== 0 || !result.stdout.trim()) {
@@ -110,6 +133,17 @@ function resolveCommandPackage(commandName, commandPath) {
     const pkg = readPackageFromFile(packageFilePath);
     if (pkg) {
       return { packageFilePath, pkg };
+    }
+  }
+
+  const wrapperTarget = resolveWrapperTarget(commandPath);
+  if (wrapperTarget) {
+    const wrapperPackageFilePath = findPackageJsonAbove(wrapperTarget);
+    if (wrapperPackageFilePath) {
+      const pkg = readPackageFromFile(wrapperPackageFilePath);
+      if (pkg) {
+        return { packageFilePath: wrapperPackageFilePath, pkg };
+      }
     }
   }
 
