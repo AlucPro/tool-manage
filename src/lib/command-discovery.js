@@ -2,7 +2,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { HELP_TIMEOUT_MS } from "./constants.js";
-import { formatAuthor, normalizeRepositoryUrl } from "./metadata.js";
+import {
+  formatAuthor,
+  formatBin,
+  formatEngines,
+  formatKeywords,
+  formatUrlField,
+  normalizeRepositoryUrl,
+} from "./metadata.js";
 
 function run(command, args, options = {}) {
   return spawnSync(command, args, {
@@ -138,6 +145,12 @@ export function collectDetectedMetadata(commandName) {
     version: pkg?.version ?? null,
     repository: normalizeRepositoryUrl(pkg?.repository),
     author: formatAuthor(pkg?.author),
+    homepage: formatUrlField(pkg?.homepage),
+    bugs: formatUrlField(pkg?.bugs),
+    license: pkg?.license ?? null,
+    keywords: formatKeywords(pkg?.keywords),
+    bin: formatBin(pkg?.bin),
+    engines: formatEngines(pkg?.engines),
     helpPreview: getCommandHelp(commandName),
   };
 }

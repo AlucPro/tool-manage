@@ -45,8 +45,8 @@ tm --list
 
 - `tm --help` shows usage plus package metadata
 - `tm --register <command>` registers a command into the sqlite registry
-- `tm --show <command>` prints a full command record, including `--help` preview
-- `tm --edit <command>` opens a metadata template so you can fill missing fields
+- `tm --show <command>` prints a full command record, including `description`, `version`, `repository`, `author`, `homepage`, `bugs`, `license`, `keywords`, `bin`, `engines`, and a `--help` preview
+- `tm --edit <command>` opens a metadata template so you can fill missing fields or override detected metadata
 - `tm --refresh <command>` re-detects runtime metadata and keeps manual overrides
 - `tm --list` or bare `tm` lists all registered commands in a table view
 - `tm --remove <command>` removes a registered command
@@ -70,14 +70,14 @@ Useful sqlite commands:
 .schema commands
 .headers on
 .mode column
-SELECT id, command_name, description, version, repository, author, metadata_source, updated_at FROM commands;
+SELECT id, command_name, description, version, repository, author, homepage, bugs, license, keywords, bin, engines, metadata_source, updated_at FROM commands;
 SELECT command_id, field_name, field_value, updated_at FROM command_overrides;
 ```
 
 One-shot query from the shell:
 
 ```bash
-sqlite3 ~/.tool-manage/tool-manage.db "SELECT id, command_name, description, version, repository, author, metadata_source FROM commands;"
+sqlite3 ~/.tool-manage/tool-manage.db "SELECT id, command_name, description, version, repository, author, homepage, bugs, license, keywords, bin, engines, metadata_source FROM commands;"
 ```
 
 ## Examples
@@ -125,6 +125,7 @@ tm --remove pom
 - legacy `~/.tool-manage/registry.json` data is auto-imported on first run
 - `tm` resolves commands from your local `PATH`
 - when available, `tm` reads command package metadata from `package.json`
+- detected package metadata currently includes `name`, `version`, `description`, `author`, `repository`, `homepage`, `bugs`, `license`, `keywords`, `bin`, and `engines`
 - `tm` stores a `--help` preview in sqlite so later list and show commands stay fast
 - if metadata is missing, `tm` can generate a JSON template for you to complete manually
 
@@ -132,7 +133,22 @@ tm --remove pom
 
 If you want another repo to be easy for `tm` to register and inspect, use the spec in [docs/package-json-registration-spec.md](/Users/alucard/Code/AlucPro/tool-manage/docs/package-json-registration-spec.md).
 
-That file is written so you can copy it into another repository and let AI generate or repair a `package.json` that exposes the fields `tm` relies on: `name`, `version`, `description`, `author`, `repository`, `bin`, `engines`, and related metadata.
+That file is written so you can copy it into another repository and let AI generate or repair a `package.json` that exposes the fields `tm` relies on: `name`, `version`, `description`, `author`, `repository`, `homepage`, `bugs`, `license`, `keywords`, `bin`, and `engines`.
+
+For best results, make sure the `bin` entry matches the actual executable name on your `PATH`, and keep URLs in a machine-readable shape such as:
+
+```json
+{
+  "homepage": "https://github.com/your-org/your-tool",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-org/your-tool.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-org/your-tool/issues"
+  }
+}
+```
 
 ## Local Development
 

@@ -1,7 +1,19 @@
 import { getDatabase } from "./sqlite.js";
 import { inferMetadataSource, toTimestamp } from "../lib/metadata.js";
 
-const OVERRIDABLE_FIELDS = ["description", "version", "repository", "author", "notes"];
+const OVERRIDABLE_FIELDS = [
+  "description",
+  "version",
+  "repository",
+  "author",
+  "homepage",
+  "bugs",
+  "license",
+  "keywords",
+  "bin",
+  "engines",
+  "notes",
+];
 
 function mapCommandRow(row, overrides) {
   const overrideMap = Object.fromEntries(
@@ -17,6 +29,12 @@ function mapCommandRow(row, overrides) {
     version: overrideMap.version ?? row.version,
     repository: overrideMap.repository ?? row.repository,
     author: overrideMap.author ?? row.author,
+    homepage: overrideMap.homepage ?? row.homepage,
+    bugs: overrideMap.bugs ?? row.bugs,
+    license: overrideMap.license ?? row.license,
+    keywords: overrideMap.keywords ?? row.keywords,
+    bin: overrideMap.bin ?? row.bin,
+    engines: overrideMap.engines ?? row.engines,
     notes: overrideMap.notes ?? null,
     helpPreview: row.help_preview,
     metadataSource: row.metadata_source,
@@ -84,6 +102,7 @@ export async function upsertCommand(record) {
         UPDATE commands
         SET command_path = ?, package_name = ?, package_json_path = ?,
             description = ?, version = ?, repository = ?, author = ?,
+            homepage = ?, bugs = ?, license = ?, keywords = ?, bin = ?, engines = ?,
             help_preview = ?, metadata_source = ?, updated_at = ?
         WHERE command_name = ?
       `,
@@ -95,6 +114,12 @@ export async function upsertCommand(record) {
         record.version ?? null,
         record.repository ?? null,
         record.author ?? null,
+        record.homepage ?? null,
+        record.bugs ?? null,
+        record.license ?? null,
+        record.keywords ?? null,
+        record.bin ?? null,
+        record.engines ?? null,
         record.helpPreview ?? null,
         record.metadataSource ?? "detected",
         now,
@@ -106,9 +131,10 @@ export async function upsertCommand(record) {
       `
         INSERT INTO commands (
           command_name, command_path, package_name, package_json_path,
-          description, version, repository, author, help_preview,
+          description, version, repository, author, homepage, bugs, license,
+          keywords, bin, engines, help_preview,
           metadata_source, created_at, updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `,
       [
         record.commandName,
@@ -119,6 +145,12 @@ export async function upsertCommand(record) {
         record.version ?? null,
         record.repository ?? null,
         record.author ?? null,
+        record.homepage ?? null,
+        record.bugs ?? null,
+        record.license ?? null,
+        record.keywords ?? null,
+        record.bin ?? null,
+        record.engines ?? null,
         record.helpPreview ?? null,
         record.metadataSource ?? "detected",
         existing?.created_at ?? now,

@@ -71,6 +71,12 @@ function applyMigrations(database) {
       version TEXT,
       repository TEXT,
       author TEXT,
+      homepage TEXT,
+      bugs TEXT,
+      license TEXT,
+      keywords TEXT,
+      bin TEXT,
+      engines TEXT,
       help_preview TEXT,
       metadata_source TEXT NOT NULL DEFAULT 'detected',
       created_at TEXT NOT NULL,
@@ -92,6 +98,24 @@ function applyMigrations(database) {
       value TEXT
     );
   `);
+
+  const columns = [
+    ["homepage", "TEXT"],
+    ["bugs", "TEXT"],
+    ["license", "TEXT"],
+    ["keywords", "TEXT"],
+    ["bin", "TEXT"],
+    ["engines", "TEXT"],
+  ];
+  const existingColumns = new Set(
+    database.all("PRAGMA table_info(commands)").map((row) => row.name)
+  );
+
+  for (const [columnName, definition] of columns) {
+    if (!existingColumns.has(columnName)) {
+      database.exec(`ALTER TABLE commands ADD COLUMN ${columnName} ${definition};`);
+    }
+  }
 }
 
 function readLegacyRegistry() {
@@ -158,6 +182,12 @@ function hydrateLegacyCommandMetadata(database) {
           AND version IS NULL
           AND repository IS NULL
           AND author IS NULL
+          AND homepage IS NULL
+          AND bugs IS NULL
+          AND license IS NULL
+          AND keywords IS NULL
+          AND bin IS NULL
+          AND engines IS NULL
         )
     `
   );
@@ -179,6 +209,7 @@ function hydrateLegacyCommandMetadata(database) {
         UPDATE commands
         SET command_path = ?, package_name = ?, package_json_path = ?,
             description = ?, version = ?, repository = ?, author = ?,
+            homepage = ?, bugs = ?, license = ?, keywords = ?, bin = ?, engines = ?,
             help_preview = ?, updated_at = ?
         WHERE id = ?
       `,
@@ -190,6 +221,12 @@ function hydrateLegacyCommandMetadata(database) {
         detected.version ?? null,
         detected.repository ?? null,
         detected.author ?? null,
+        detected.homepage ?? null,
+        detected.bugs ?? null,
+        detected.license ?? null,
+        detected.keywords ?? null,
+        detected.bin ?? null,
+        detected.engines ?? null,
         detected.helpPreview ?? null,
         now,
         row.id,

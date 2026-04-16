@@ -25,6 +25,59 @@ export function formatAuthor(author) {
   return segments.join(" | ") || null;
 }
 
+export function formatUrlField(value) {
+  if (!value) {
+    return null;
+  }
+
+  if (typeof value === "string") {
+    return value;
+  }
+
+  return value.url ?? null;
+}
+
+export function formatBin(bin) {
+  if (!bin) {
+    return null;
+  }
+
+  if (typeof bin === "string") {
+    return bin;
+  }
+
+  if (typeof bin === "object") {
+    const entries = Object.entries(bin)
+      .filter(([, value]) => value)
+      .map(([commandName, filePath]) => `${commandName}: ${filePath}`);
+
+    return entries.length > 0 ? entries.join(", ") : null;
+  }
+
+  return null;
+}
+
+export function formatEngines(engines) {
+  if (!engines || typeof engines !== "object") {
+    return null;
+  }
+
+  const entries = Object.entries(engines)
+    .filter(([, value]) => value)
+    .map(([name, version]) => `${name}: ${version}`);
+
+  return entries.length > 0 ? entries.join(", ") : null;
+}
+
+export function formatKeywords(keywords) {
+  if (!Array.isArray(keywords)) {
+    return null;
+  }
+
+  const values = keywords.map((value) => String(value).trim()).filter(Boolean);
+  return values.length > 0 ? values.join(", ") : null;
+}
+
 export function normalizeRepositoryUrl(repository) {
   const raw = formatRepository(repository);
   if (!raw) {
@@ -69,6 +122,12 @@ export function inferMetadataSource(baseRecord, overrides) {
     baseRecord.version,
     baseRecord.repository,
     baseRecord.author,
+    baseRecord.homepage,
+    baseRecord.bugs,
+    baseRecord.license,
+    baseRecord.keywords,
+    baseRecord.bin,
+    baseRecord.engines,
   ].some(Boolean);
   const hasManualValues = overrides.length > 0;
 

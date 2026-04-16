@@ -18,7 +18,7 @@ function printSection(title) {
 }
 
 function printKeyValue(label, value, indent = "") {
-  const normalizedLabel = `${label}:`.padEnd(16, " ");
+  const normalizedLabel = `${label}:`.padEnd(18, " ");
   console.log(`${indent}${normalizedLabel}${displayValue(value)}`);
 }
 
@@ -103,6 +103,12 @@ export function printCommandDetail(command) {
   printKeyValue("Version", command.version, "  ");
   printKeyValue("Repository", command.repository, "  ");
   printKeyValue("Author", command.author, "  ");
+  printKeyValue("Homepage", command.homepage, "  ");
+  printKeyValue("Bugs", command.bugs, "  ");
+  printKeyValue("License", command.license, "  ");
+  printKeyValue("Keywords", command.keywords, "  ");
+  printKeyValue("Bin", command.bin, "  ");
+  printKeyValue("Engines", command.engines, "  ");
   printKeyValue("Metadata Source", command.metadataSource, "  ");
   printKeyValue("Command Path", command.commandPath, "  ");
   printKeyValue("Package", command.packageName, "  ");
