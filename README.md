@@ -153,10 +153,12 @@ pnpm start -- --list
 
 ## Publish
 
-Before publishing, make sure you are logged in to npm and the package name is still available:
+For the full manual release flow, see [docs/npm-publish.md](/Users/alucard/Code/AlucPro/tool-manage/docs/npm-publish.md).
+
+Quick publish commands:
 
 ```bash
 npm whoami
 npm view @alucpro/tool-manage version --registry=https://registry.npmjs.org/
-pnpm publish --access public
+npm publish --access public --registry=https://registry.npmjs.org/
 ```
