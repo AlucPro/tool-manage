@@ -1,6 +1,6 @@
 {
   "name": "@alucpro/tool-manage",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Register, inspect, enrich, and manage local CLI commands with sqlite-backed metadata.",
   "type": "module",
   "private": false,
@@ -8,7 +8,8 @@
     "tm": "./src/cli.js"
   },
   "files": [
-    "src"
+    "src",
+    "templates"
   ],
   "license": "MIT",
   "author": "Xuming <jinxm.alucard@gmail.com>",

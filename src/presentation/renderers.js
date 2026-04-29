@@ -46,6 +46,7 @@ export function printHelp(projectMeta) {
   printSection("Usage");
   console.log("  tm");
   console.log("  tm --register <command>");
+  console.log("  tm --add <file-or-url>");
   console.log("  tm --show <command>");
   console.log("  tm --edit <command>");
   console.log("  tm --refresh <command>");
@@ -55,6 +56,7 @@ export function printHelp(projectMeta) {
   console.log("  -h, --help          Show help and project metadata");
   console.log("  -v, --version       Show the current version");
   console.log("  -r, --register      Register a local command");
+  console.log("  -a, --add           Add a command from a manual JSON spec");
   console.log("  -l, --list          List all registered commands");
   console.log("  -s, --show          Show a registered command in detail");
   console.log("  -e, --edit          Edit stored metadata for a command");
@@ -64,6 +66,7 @@ export function printHelp(projectMeta) {
   printSection("Examples");
   console.log("  tm");
   console.log("  tm --register pom");
+  console.log("  tm --add ./templates/manual-command.template.json");
   console.log("  tm --show pom");
   console.log("  tm --edit pom");
   console.log("  tm --refresh pom");
@@ -73,7 +76,7 @@ export function printHelp(projectMeta) {
 export function printList(commands) {
   if (commands.length === 0) {
     console.log("No commands registered yet.");
-    console.log("Use `tm --register <command>` to add one.");
+    console.log("Use `tm --register <command>` or `tm --add <file-or-url>` to add one.");
     return;
   }
 
@@ -130,6 +133,8 @@ export function printRegistrationResult(result) {
     suffix = result.wasManualEdit
       ? "Registered with manual metadata completion."
       : "Registered with detected metadata.";
+  } else if (result.mode === "add") {
+    suffix = "Added command from manual JSON spec.";
   } else if (result.mode === "edit") {
     suffix = "Updated stored metadata.";
   } else if (result.mode === "refresh") {
@@ -142,6 +147,11 @@ export function printRegistrationResult(result) {
   if (result.templatePath) {
     printSection("Template");
     console.log(result.templatePath);
+  }
+
+  if (result.source) {
+    printSection("Source");
+    console.log(result.source);
   }
 }
 

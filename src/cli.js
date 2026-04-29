@@ -34,6 +34,10 @@ function parseArgs(args) {
     return { action: "register", commandName: second };
   }
 
+  if (first === "-a" || first === "--add" || first === "add") {
+    return { action: "add", source: second };
+  }
+
   if (first === "-e" || first === "--edit" || first === "edit") {
     return { action: "edit", commandName: second };
   }
@@ -81,6 +85,12 @@ async function main(argv) {
 
   if (parsed.action === "register") {
     const result = await service.registerCommand(parsed.commandName);
+    printRegistrationResult(result);
+    return;
+  }
+
+  if (parsed.action === "add") {
+    const result = await service.addCommandFromSpec(parsed.source);
     printRegistrationResult(result);
     return;
   }

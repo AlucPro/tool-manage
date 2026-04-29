@@ -2,6 +2,7 @@ import { confirm, intro, note, outro, spinner } from "@clack/prompts";
 import { collectDetectedMetadata, commandExists } from "../lib/command-discovery.js";
 import { openEditor } from "../lib/editor.js";
 import { REQUIRED_MANUAL_FIELDS } from "../lib/constants.js";
+import { loadManualSpec } from "../lib/manual-command-spec.js";
 import { inferMetadataSource } from "../lib/metadata.js";
 import { getProjectMeta } from "../lib/package-meta.js";
 import {
@@ -189,6 +190,29 @@ export async function createCommandService() {
         wasManualEdit: false,
         missingFields: [],
         mode: "register",
+      };
+    },
+
+    async addCommandFromSpec(specSource) {
+      const progress = spinner();
+      progress.start("Loading manual command spec");
+      const { source, spec } = await loadManualSpec(specSource);
+
+      ensureNotSelf(spec.commandName);
+
+      const saved = await upsertCommand({
+        ...spec,
+        metadataSource: "manual",
+      });
+      progress.stop(`Added manual command "${spec.commandName}"`);
+
+      return {
+        command: saved,
+        templatePath: null,
+        wasManualEdit: false,
+        missingFields: [],
+        mode: "add",
+        source,
       };
     },
 

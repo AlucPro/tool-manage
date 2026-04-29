@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "commandName": "my-script",
+  "commandPath": "/absolute/path/to/my-script.sh",
+  "packageName": null,
+  "packageJsonPath": null,
+  "description": "One-line summary of what this script does.",
+  "version": "0.1.0",
+  "repository": "https://github.com/your-org/your-repo",
+  "author": "Your Name <you@example.com>",
+  "homepage": "https://github.com/your-org/your-repo#readme",
+  "bugs": "https://github.com/your-org/your-repo/issues",
+  "license": "MIT",
+  "keywords": [
+    "shell",
+    "automation",
+    "internal-tool"
+  ],
+  "bin": "my-script",
+  "engines": {
+    "bash": ">=4.0"
+  },
+  "notes": "Optional extra notes: dependencies, caveats, environment variables, or operational warnings.",
+  "helpPreview": "Usage: my-script <input> [options]\n\nOptions:\n  --dry-run    Preview actions without writing changes.\n  --help       Show help.\n\nExamples:\n  my-script ./input.txt\n  my-script ./input.txt --dry-run"
+}

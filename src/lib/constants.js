@@ -14,3 +14,10 @@ export const REQUIRED_MANUAL_FIELDS = [
   "repository",
   "author",
 ];
+export const REQUIRED_MANUAL_SPEC_FIELDS = [
+  "commandName",
+  "description",
+  "version",
+  "repository",
+  "author",
+];
