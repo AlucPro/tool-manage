@@ -1,7 +1,7 @@
 {
   "name": "@alucpro/tool-manage",
   "version": "0.2.2",
-  "description": "Register, inspect, enrich, and manage local CLI commands with sqlite-backed metadata.",
+  "description": "A sqlite-backed local registry for managing CLI tools, scripts, and internal commands.",
   "type": "module",
   "private": false,
   "bin": {
@@ -36,11 +36,18 @@
   },
   "keywords": [
     "cli",
-    "npm",
-    "tool",
-    "tm",
+    "command-line",
+    "terminal",
+    "developer-tools",
+    "tool-manager",
     "command-registry",
-    "sqlite"
+    "script-manager",
+    "local-first",
+    "productivity",
+    "sqlite",
+    "ai-coding",
+    "npm",
+    "pnpm"
   ],
   "dependencies": {
     "@clack/prompts": "^1.2.0",
