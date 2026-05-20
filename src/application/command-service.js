@@ -150,6 +150,7 @@ function buildGeneratedTemplate(commandName = "") {
     version: "",
     repository: "",
     author: "",
+    helpPreview: "",
   };
 }
 

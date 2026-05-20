@@ -224,9 +224,11 @@ test("tm --generate creates a minimal manual spec template", () => {
     "version",
     "repository",
     "author",
+    "helpPreview",
   ]);
   assert.equal(payload.commandName, "draft-tool");
   assert.equal(payload.description, "");
+  assert.equal(payload.helpPreview, "");
   fs.unlinkSync(generatedPath);
 });
 
