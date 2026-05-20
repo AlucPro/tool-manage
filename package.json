@@ -1,6 +1,6 @@
 {
   "name": "@alucpro/tool-manage",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "A sqlite-backed local registry for managing CLI tools, scripts, and internal commands.",
   "type": "module",
   "private": false,
