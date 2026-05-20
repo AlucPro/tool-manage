@@ -41,6 +41,32 @@ tm --remove <command>
 tm --generate [command]
 ```
 
+## Demo
+
+### Add a local command and inspect it
+
+`tm` can discover a command from `PATH`, save its metadata, and then show the record in detail.
+
+![Add and show a command](./docs/assets/help-add-list.gif)
+
+### Show a registered command
+
+Use `tm --show <command>` when you want the stored description, version, repository, author, and help preview in one place.
+
+![Show a registered command](./docs/assets/help-list-show.gif)
+
+### Generate a starter JSON spec
+
+For private scripts or internal tools, `tm --generate` gives you a valid JSON skeleton that you can finish and import later.
+
+![Generate a starter JSON spec](./docs/assets/gen.gif)
+
+### Clean up the active list
+
+`tm --remove <command>` soft-deletes the command so it disappears from the active list without throwing away its history.
+
+![Remove a command from the active list](./docs/assets/help-list-remove-list.gif)
+
 ## Install
 
 ```bash

@@ -1,6 +1,6 @@
 {
   "name": "@alucpro/tool-manage",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "Register, inspect, enrich, and manage local CLI commands with sqlite-backed metadata.",
   "type": "module",
   "private": false,

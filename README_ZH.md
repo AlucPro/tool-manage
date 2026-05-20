@@ -46,6 +46,32 @@ tm --remove <command>
 tm --generate [command]
 ```
 
+## 演示
+
+### 1. 添加本地命令并查看结果
+
+`tm` 可以直接从 `PATH` 里发现命令，保存元数据，再把这条命令的完整信息展示出来。
+
+![添加并查看命令](./docs/assets/help-add-list.gif)
+
+### 2. 查看已登记命令详情
+
+当你想把描述、版本、仓库、作者和帮助预览放到同一个视图里看时，用 `tm --show <command>` 就很顺手。
+
+![查看命令详情](./docs/assets/help-list-show.gif)
+
+### 3. 生成一个可继续补充的 JSON 模板
+
+对于私有脚本或内部工具，`tm --generate` 会先给你一个合法 JSON 骨架，补完后再用 `tm --add` 导入即可。
+
+![生成 JSON 模板](./docs/assets/gen.gif)
+
+### 4. 清理当前命令列表
+
+`tm --remove <command>` 采用软删除，命令会从当前活动列表里消失，但历史记录不会直接丢掉。
+
+![从活动列表移除命令](./docs/assets/help-list-remove-list.gif)
+
 ## 安装
 
 ```bash
