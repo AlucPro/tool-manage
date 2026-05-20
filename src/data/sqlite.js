@@ -80,7 +80,8 @@ function applyMigrations(database) {
       help_preview TEXT,
       metadata_source TEXT NOT NULL DEFAULT 'detected',
       created_at TEXT NOT NULL,
-      updated_at TEXT NOT NULL
+      updated_at TEXT NOT NULL,
+      deleted_at TEXT
     );
 
     CREATE TABLE IF NOT EXISTS command_overrides (
@@ -106,6 +107,7 @@ function applyMigrations(database) {
     ["keywords", "TEXT"],
     ["bin", "TEXT"],
     ["engines", "TEXT"],
+    ["deleted_at", "TEXT"],
   ];
   const existingColumns = new Set(
     database.all("PRAGMA table_info(commands)").map((row) => row.name)
@@ -137,35 +139,38 @@ function migrateLegacyRegistry(database) {
     ["legacy_registry_migrated"]
   );
 
-  if (alreadyMigrated?.value === "true") {
-    return;
-  }
+  if (alreadyMigrated?.value !== "true") {
+    const legacyCommands = readLegacyRegistry();
+    const existing = database.get("SELECT COUNT(*) AS count FROM commands");
 
-  const legacyCommands = readLegacyRegistry();
-  const existing = database.get("SELECT COUNT(*) AS count FROM commands");
+    if (legacyCommands.length > 0 && Number(existing?.count ?? 0) === 0) {
+      const now = new Date().toISOString();
 
-  if (legacyCommands.length > 0 && Number(existing?.count ?? 0) === 0) {
-    const now = new Date().toISOString();
+      for (const commandName of legacyCommands) {
+        database.run(
+          `
+            INSERT INTO commands (
+              command_name, metadata_source, created_at, updated_at
+            ) VALUES (?, 'detected', ?, ?)
+          `,
+          [commandName, now, now]
+        );
+      }
 
-    for (const commandName of legacyCommands) {
-      database.run(
-        `
-          INSERT INTO commands (
-            command_name, metadata_source, created_at, updated_at
-          ) VALUES (?, 'detected', ?, ?)
-        `,
-        [commandName, now, now]
-      );
+      if (fs.existsSync(LEGACY_REGISTRY_PATH) && !fs.existsSync(LEGACY_REGISTRY_BACKUP_PATH)) {
+        fs.copyFileSync(LEGACY_REGISTRY_PATH, LEGACY_REGISTRY_BACKUP_PATH);
+      }
     }
 
-    if (fs.existsSync(LEGACY_REGISTRY_PATH) && !fs.existsSync(LEGACY_REGISTRY_BACKUP_PATH)) {
-      fs.copyFileSync(LEGACY_REGISTRY_PATH, LEGACY_REGISTRY_BACKUP_PATH);
-    }
+    database.run(
+      "INSERT OR REPLACE INTO app_meta (key, value) VALUES (?, ?)",
+      ["legacy_registry_migrated", "true"]
+    );
   }
 
   database.run(
     "INSERT OR REPLACE INTO app_meta (key, value) VALUES (?, ?)",
-    ["legacy_registry_migrated", "true"]
+    ["schema_version", "2"]
   );
 }
 

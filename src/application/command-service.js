@@ -1,3 +1,5 @@
+import fs from "node:fs";
+import path from "node:path";
 import { confirm, intro, note, outro, spinner } from "@clack/prompts";
 import { collectDetectedMetadata, commandExists } from "../lib/command-discovery.js";
 import { openEditor } from "../lib/editor.js";
@@ -13,6 +15,14 @@ import {
   upsertCommand,
 } from "../data/command-repository.js";
 import { readTemplate, writeTemplate } from "../data/template-store.js";
+
+function isHttpUrl(value) {
+  return /^https?:\/\//i.test(String(value ?? "").trim());
+}
+
+function looksLikeFileInput(value) {
+  return /\.json$/i.test(value) || value.includes("/") || value.startsWith(".");
+}
 
 function requireCommandName(commandName, action) {
   if (!commandName) {
@@ -132,6 +142,17 @@ async function runEditableTemplateFlow(
   };
 }
 
+function buildGeneratedTemplate(commandName = "") {
+  return {
+    schemaVersion: 1,
+    commandName,
+    description: "",
+    version: "",
+    repository: "",
+    author: "",
+  };
+}
+
 export async function createCommandService() {
   const projectMeta = getProjectMeta();
 
@@ -155,7 +176,31 @@ export async function createCommandService() {
       return command;
     },
 
-    async registerCommand(commandName) {
+    async addCommand(input) {
+      const normalizedInput = String(input ?? "").trim();
+
+      if (!normalizedInput) {
+        throw new Error("Missing command name or JSON file path for add.");
+      }
+
+      if (isHttpUrl(normalizedInput) || fs.existsSync(path.resolve(normalizedInput))) {
+        return this.addCommandFromSpec(normalizedInput);
+      }
+
+      if (!commandExists(normalizedInput)) {
+        if (looksLikeFileInput(normalizedInput)) {
+          throw new Error(`Manual spec file was not found: ${path.resolve(normalizedInput)}`);
+        }
+
+        throw new Error(
+          `Input "${normalizedInput}" is neither a local JSON spec nor a command available in your PATH.`
+        );
+      }
+
+      return this.registerCommand(normalizedInput, { mode: "add" });
+    },
+
+    async registerCommand(commandName, options = {}) {
       requireCommandName(commandName, "registration");
       ensureNotSelf(commandName);
 
@@ -180,7 +225,7 @@ export async function createCommandService() {
           baseRecord,
           missingFields,
           `Complete metadata for "${commandName}"`,
-          "register"
+          options.mode ?? "register"
         );
       }
 
@@ -189,7 +234,7 @@ export async function createCommandService() {
         templatePath: null,
         wasManualEdit: false,
         missingFields: [],
-        mode: "register",
+        mode: options.mode ?? "register",
       };
     },
 
@@ -268,6 +313,14 @@ export async function createCommandService() {
       };
     },
 
+    async updateCommand(commandName) {
+      const result = await this.refreshCommand(commandName);
+      return {
+        ...result,
+        mode: "update",
+      };
+    },
+
     async removeCommand(commandName) {
       requireCommandName(commandName, "removal");
       const removed = await removeCommandRecord(commandName);
@@ -277,6 +330,28 @@ export async function createCommandService() {
       }
 
       return { commandName };
+    },
+
+    async generateTemplate(commandName) {
+      const normalizedCommandName = String(commandName ?? "").trim();
+      const targetName = normalizedCommandName || `tm-command-${Date.now()}`;
+
+      if (normalizedCommandName) {
+        const existing = await getCommandByName(normalizedCommandName);
+        if (existing) {
+          throw new Error(`Command "${normalizedCommandName}" is already registered.`);
+        }
+      }
+
+      const outputPath = path.resolve(`${targetName}.json`);
+      const payload = buildGeneratedTemplate(normalizedCommandName);
+      fs.writeFileSync(outputPath, `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+
+      return {
+        commandName: normalizedCommandName || null,
+        filePath: outputPath,
+        payload,
+      };
     },
   };
 }

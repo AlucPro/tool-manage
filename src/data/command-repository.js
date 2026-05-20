@@ -38,6 +38,7 @@ function mapCommandRow(row, overrides) {
     notes: overrideMap.notes ?? null,
     helpPreview: row.help_preview,
     metadataSource: row.metadata_source,
+    deletedAt: row.deleted_at ?? null,
     updatedAt: row.updated_at,
     createdAt: row.created_at,
     overrides: overrideMap,
@@ -64,6 +65,7 @@ export async function listCommands() {
     `
       SELECT *
       FROM commands
+      WHERE deleted_at IS NULL
       ORDER BY command_name COLLATE NOCASE ASC
     `
   );
@@ -77,9 +79,12 @@ export async function listCommands() {
   return commands;
 }
 
-export async function getCommandByName(commandName) {
+export async function getCommandByName(commandName, options = {}) {
   const database = await getDatabase();
-  const row = database.get("SELECT * FROM commands WHERE command_name = ?", [commandName]);
+  const whereClause = options.includeDeleted
+    ? "command_name = ?"
+    : "command_name = ? AND deleted_at IS NULL";
+  const row = database.get(`SELECT * FROM commands WHERE ${whereClause}`, [commandName]);
 
   if (!row) {
     return null;
@@ -92,7 +97,7 @@ export async function getCommandByName(commandName) {
 export async function upsertCommand(record) {
   const database = await getDatabase();
   const now = toTimestamp();
-  const existing = database.get("SELECT id, created_at FROM commands WHERE command_name = ?", [
+  const existing = database.get("SELECT id, created_at, deleted_at FROM commands WHERE command_name = ?", [
     record.commandName,
   ]);
 
@@ -103,7 +108,7 @@ export async function upsertCommand(record) {
         SET command_path = ?, package_name = ?, package_json_path = ?,
             description = ?, version = ?, repository = ?, author = ?,
             homepage = ?, bugs = ?, license = ?, keywords = ?, bin = ?, engines = ?,
-            help_preview = ?, metadata_source = ?, updated_at = ?
+            help_preview = ?, metadata_source = ?, deleted_at = NULL, updated_at = ?
         WHERE command_name = ?
       `,
       [
@@ -164,7 +169,9 @@ export async function upsertCommand(record) {
 
 export async function saveOverrides(commandName, values) {
   const database = await getDatabase();
-  const command = database.get("SELECT * FROM commands WHERE command_name = ?", [commandName]);
+  const command = database.get("SELECT * FROM commands WHERE command_name = ? AND deleted_at IS NULL", [
+    commandName,
+  ]);
 
   if (!command) {
     throw new Error(`Command "${commandName}" is not registered.`);
@@ -212,12 +219,18 @@ export async function saveOverrides(commandName, values) {
 
 export async function removeCommand(commandName) {
   const database = await getDatabase();
-  const existing = database.get("SELECT id FROM commands WHERE command_name = ?", [commandName]);
+  const existing = database.get("SELECT id FROM commands WHERE command_name = ? AND deleted_at IS NULL", [
+    commandName,
+  ]);
 
   if (!existing) {
     return false;
   }
 
-  database.run("DELETE FROM commands WHERE command_name = ?", [commandName]);
+  const now = toTimestamp();
+  database.run(
+    "UPDATE commands SET deleted_at = ?, updated_at = ? WHERE command_name = ?",
+    [now, now, commandName]
+  );
   return true;
 }
