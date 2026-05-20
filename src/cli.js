@@ -5,6 +5,7 @@ import { createCommandService } from "./application/command-service.js";
 import {
   exitWithError,
   printCommandDetail,
+  printGenerationResult,
   printHelp,
   printList,
   printRegistrationResult,
@@ -35,7 +36,7 @@ function parseArgs(args) {
   }
 
   if (first === "-a" || first === "--add" || first === "add") {
-    return { action: "add", source: second };
+    return { action: "add", input: second };
   }
 
   if (first === "-e" || first === "--edit" || first === "edit") {
@@ -48,6 +49,14 @@ function parseArgs(args) {
 
   if (first === "--refresh" || first === "refresh") {
     return { action: "refresh", commandName: second };
+  }
+
+  if (first === "-u" || first === "--update" || first === "update") {
+    return { action: "update", commandName: second };
+  }
+
+  if (first === "-g" || first === "--generate" || first === "generate") {
+    return { action: "generate", commandName: second };
   }
 
   if (
@@ -90,7 +99,7 @@ async function main(argv) {
   }
 
   if (parsed.action === "add") {
-    const result = await service.addCommandFromSpec(parsed.source);
+    const result = await service.addCommand(parsed.input);
     printRegistrationResult(result);
     return;
   }
@@ -113,9 +122,21 @@ async function main(argv) {
     return;
   }
 
+  if (parsed.action === "update") {
+    const result = await service.updateCommand(parsed.commandName);
+    printRegistrationResult(result);
+    return;
+  }
+
   if (parsed.action === "remove") {
     const result = await service.removeCommand(parsed.commandName);
     printRemovalResult(result);
+    return;
+  }
+
+  if (parsed.action === "generate") {
+    const result = await service.generateTemplate(parsed.commandName);
+    printGenerationResult(result);
     return;
   }
 

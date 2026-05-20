@@ -1,8 +1,45 @@
+[中文](./README_ZH.md) | English
+
 # tool-manage
 
-Register, inspect, enrich, and manage locally available CLI commands with `tm`.
+Give your local CLI toolbox a memory.
 
-`tool-manage` is designed for developers who have multiple local CLI tools installed and want a richer local registry to keep track of them. It stores command metadata in sqlite, can recover old `registry.json` data, and supports manual metadata completion when a command does not expose a usable `package.json`.
+`tool-manage` adds a clean registry on top of the commands already living on your machine. With `tm`, you can discover a command from `PATH`, import a hand-written JSON spec, keep important metadata in sqlite, and come back later to inspect, update, or retire it without losing context.
+
+It is built for developers who have more scripts and CLIs than they can comfortably remember.
+
+## Why It Helps
+
+- Turn scattered local commands into a searchable personal catalog
+- Keep descriptions, versions, authors, repos, and help output in one place
+- Mix automatic discovery with manual specs for private or internal tools
+- Soft-delete commands instead of losing history
+- Generate starter JSON specs for scripts that do not expose package metadata
+
+## Quick Preview
+
+The core loop is intentionally small:
+
+```bash
+tm --add pnpm
+tm --show pnpm
+tm --update pnpm
+tm --generate sync-notes
+tm --add ./sync-notes.json
+tm --remove pnpm
+```
+
+And the help surface stays compact:
+
+```bash
+tm --help
+tm --add <command-or-json>
+tm --show <command>
+tm --edit <command>
+tm --update <command>
+tm --remove <command>
+tm --generate [command]
+```
 
 ## Install
 
@@ -18,268 +55,89 @@ pnpm add -g @alucpro/tool-manage
 
 ## Usage
 
-```bash
-tm --help
-tm
-tm --register pom
-tm --add ./templates/manual-command.template.json
-tm --show pom
-tm --edit pom
-tm --refresh pom
-tm --remove pom
-```
-
-## Commands
+### Add what already exists on your machine
 
 ```bash
-tm --help
-tm --version
-tm --register <command>
-tm --add <file-or-url>
-tm --show <command>
-tm --edit <command>
-tm --refresh <command>
-tm --remove <command>
-tm --list
+tm --add pnpm
+tm --add pom
 ```
 
-## Features
+`tm` will resolve the command from your `PATH`, inspect package metadata when possible, and store a help preview for later lookup.
 
-- `tm --help` shows usage plus package metadata
-- `tm --register <command>` registers a command into the sqlite registry
-- `tm --add <file-or-url>` adds a command from a manual JSON spec, even if that command is not discoverable from `PATH`
-- `tm --show <command>` prints a full command record, including `description`, `version`, `repository`, `author`, `homepage`, `bugs`, `license`, `keywords`, `bin`, `engines`, and a `--help` preview
-- `tm --edit <command>` opens a metadata template so you can fill missing fields or override detected metadata
-- `tm --refresh <command>` re-detects runtime metadata and keeps manual overrides
-- `tm --list` or bare `tm` lists all registered commands in a table view
-- `tm --remove <command>` removes a registered command
-
-## Storage
-
-- sqlite database: `~/.tool-manage/tool-manage.db`
-- metadata templates: `~/.tool-manage/templates/`
-- legacy backup after migration: `~/.tool-manage/registry.json.bak`
-
-Inspect the sqlite database directly:
+### Add a command from a JSON spec
 
 ```bash
-sqlite3 ~/.tool-manage/tool-manage.db
+tm --add ./my-command.json
+tm --add https://example.com/my-command.json
 ```
 
-Useful sqlite commands:
+This is ideal for private scripts, internal tools, or anything that does not expose a useful `package.json`.
 
-```sql
-.tables
-.schema commands
-.headers on
-.mode column
-SELECT id, command_name, description, version, repository, author, homepage, bugs, license, keywords, bin, engines, metadata_source, updated_at FROM commands;
-SELECT command_id, field_name, field_value, updated_at FROM command_overrides;
-```
-
-One-shot query from the shell:
+### Generate a starter spec
 
 ```bash
-sqlite3 ~/.tool-manage/tool-manage.db "SELECT id, command_name, description, version, repository, author, homepage, bugs, license, keywords, bin, engines, metadata_source FROM commands;"
+tm --generate
+tm --generate sync-notes
 ```
 
-## Examples
+Use this when you want a blank, valid JSON skeleton that can later be imported with `tm --add`.
 
-Register a locally available command:
-
-```bash
-tm -r pom
-```
-
-Add a manually documented script:
-
-```bash
-tm --add ./your-script.json
-```
-
-Add from a remote JSON URL:
-
-```bash
-tm --add https://example.com/your-script.json
-```
-
-Show one registered command:
-
-```bash
-tm --show pom
-```
-
-Edit metadata for a command:
-
-```bash
-tm --edit pom
-```
-
-Refresh detected metadata:
-
-```bash
-tm --refresh pom
-```
-
-List all registered commands:
+### Inspect and maintain your registry
 
 ```bash
 tm
+tm --show pnpm
+tm --edit pnpm
+tm --update pnpm
+tm --remove pnpm
 ```
 
-Remove a command from the registry:
+## AI JSON Spec Docs
 
-```bash
-tm --remove pom
-```
+If you want another CLI project to generate a JSON file that `tm --add` can ingest, use these docs:
 
-## How It Works
+- [AI Command JSON Spec](./docs/AI_COMMAND_JSON_SPEC.md)
+- [AI Command JSON Spec (Chinese)](./docs/AI_COMMAND_JSON_SPEC_ZH.md)
 
-- command data is stored in `~/.tool-manage/tool-manage.db`
-- editable metadata templates are stored in `~/.tool-manage/templates/`
-- legacy `~/.tool-manage/registry.json` data is auto-imported on first run
-- `tm` resolves commands from your local `PATH`
-- when available, `tm` reads command package metadata from `package.json`
-- detected package metadata currently includes `name`, `version`, `description`, `author`, `repository`, `homepage`, `bugs`, `license`, `keywords`, `bin`, and `engines`
-- `tm` stores a `--help` preview in sqlite so later list and show commands stay fast
-- if metadata is missing, `tm` can generate a JSON template for you to complete manually
-- `tm --add` skips auto-detection and writes a fully manual record from your JSON spec
-
-## Manual JSON Spec For `tm --add`
-
-Use `tm --add <file-or-url>` when you have your own script and want to register it with a hand-written description file.
-
-Required fields:
-
-- `commandName`
-- `description`
-- `version`
-- `repository`
-- `author`
-
-Supported fields:
-
-- `schemaVersion`
-- `commandName`
-- `commandPath`
-- `scriptPath`
-- `packageName`
-- `packageJsonPath`
-- `description`
-- `version`
-- `repository`
-- `author`
-- `homepage`
-- `bugs`
-- `license`
-- `keywords`
-- `bin`
-- `engines`
-- `notes`
-- `helpPreview`
-- `usage`
-
-Notes:
-
-- `schemaVersion` currently should be `1`
-- `scriptPath` is accepted as an alias of `commandPath`
-- `usage` is accepted as an alias of `helpPreview`
-- `keywords` can be either an array or a comma-separated string
-- `bin` can be either a string or an object like package.json's `bin`
-- `engines` can be either a string or an object
-- `repository`, `author`, `homepage`, and `bugs` accept the same shapes commonly used in `package.json`
-
-Example:
-
-```json
-{
-  "schemaVersion": 1,
-  "commandName": "sync-notes",
-  "commandPath": "/Users/alucard/bin/sync-notes.sh",
-  "description": "Sync local markdown notes into a workspace folder.",
-  "version": "0.3.0",
-  "repository": "https://github.com/your-org/internal-scripts",
-  "author": "Your Name <you@example.com>",
-  "homepage": "https://github.com/your-org/internal-scripts#readme",
-  "bugs": "https://github.com/your-org/internal-scripts/issues",
-  "license": "MIT",
-  "keywords": ["shell", "notes", "sync"],
-  "bin": "sync-notes",
-  "engines": {
-    "bash": ">=4.0"
-  },
-  "notes": "Requires rsync and SSH access to the target workspace.",
-  "helpPreview": "Usage: sync-notes <source> <target>\n\nOptions:\n  --dry-run    Preview only\n  --help       Show help"
-}
-```
-
-Then add it with:
-
-```bash
-tm --add ./sync-notes.json
-```
-
-## AI Templates For Manual Specs
-
-These two files are included in the repo for AI-assisted generation:
-
-- JSON template: [templates/manual-command.template.json](/Users/alucard/Code/AlucPro/tool-manage/templates/manual-command.template.json)
-- shell-to-JSON instruction template: [templates/manual-command-shell-template.md](/Users/alucard/Code/AlucPro/tool-manage/templates/manual-command-shell-template.md)
-
-Recommended workflow:
-
-1. Give AI your shell script.
-2. Also give AI those two template files.
-3. Ask AI to return a filled `xxx.json` matching the JSON template exactly.
-4. Run `tm --add ./xxx.json`.
-
-## Registration-Friendly package.json
-
-If you want another repo to be easy for `tm` to register and inspect, use the spec in [docs/package-json-registration-spec.md](/Users/alucard/Code/AlucPro/tool-manage/docs/package-json-registration-spec.md).
-
-That file is written so you can copy it into another repository and let AI generate or repair a `package.json` that exposes the fields `tm` relies on: `name`, `version`, `description`, `author`, `repository`, `homepage`, `bugs`, `license`, `keywords`, `bin`, and `engines`.
-
-For best results, make sure the `bin` entry matches the actual executable name on your `PATH`, and keep URLs in a machine-readable shape such as:
-
-```json
-{
-  "homepage": "https://github.com/your-org/your-tool",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/your-org/your-tool.git"
-  },
-  "bugs": {
-    "url": "https://github.com/your-org/your-tool/issues"
-  }
-}
-```
+They are written to be pasted directly into an AI workflow along with a shell script or CLI project.
 
 ## Local Development
 
-```bash
-npm install
-npm run start -- --help
-```
+For local setup, testing, and release-time checks:
 
-or
+- [Local Test Guide](./docs/LOCAL_TEST.md)
+- [本地测试说明](./docs/LOCAL_TEST_ZH.md)
+
+Quick start:
 
 ```bash
 pnpm install
+pnpm test
 pnpm start -- --help
-pnpm start -- --register pom
-pnpm start -- --add ./templates/manual-command.template.json
-pnpm start -- --show pom
-pnpm start -- --list
 ```
 
-## Publish
+## Storage Notes
 
-For the full manual release flow, see [docs/npm-publish.md](/Users/alucard/Code/AlucPro/tool-manage/docs/npm-publish.md).
+Runtime data lives in:
 
-Quick publish commands:
+- sqlite database: `~/.tool-manage/tool-manage.db`
+- editable templates: `~/.tool-manage/templates/`
+- schema reference: [schema/sqlite.sql](./schema/sqlite.sql)
 
-```bash
-npm whoami
-npm view @alucpro/tool-manage version --registry=https://registry.npmjs.org/
-npm publish --access public --registry=https://registry.npmjs.org/
-```
+`tm --remove` uses soft deletion through `commands.deleted_at`, so records can be retired without losing their history.
+
+## Compatibility Notes
+
+V2 still accepts a few older aliases:
+
+- `tm --register <command>` -> `tm --add <command>`
+- `tm --refresh <command>` -> `tm --update <command>`
+- `tm --unregister <command>` -> `tm --remove <command>`
+
+## Contact
+
+Built by Xuming.
+
+If this tool helps your CLI workflow and you want to talk about improvements, ideas, or custom tooling, reach out here:
+
+- [https://dg.aluc.me](https://dg.aluc.me)
