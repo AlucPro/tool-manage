@@ -5,7 +5,7 @@
   "type": "module",
   "private": false,
   "bin": {
-    "tm": "./src/cli.js"
+    "tm": "src/cli.js"
   },
   "files": [
     "src",
